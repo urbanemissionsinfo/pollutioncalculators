@@ -175,9 +175,7 @@ waste_uncollected_urban = dry_waste_urban - urban_waste_collected
 waste_uncollected_rural = dry_waste_rural - rural_waste_collected
 total_waste_uncollected = waste_uncollected_urban + waste_uncollected_rural
 
-waste_burnt_urban = (
-    waste_uncollected_urban * urban_burnrate / 100
-)  # Used sessoin state var
+waste_burnt_urban = (waste_uncollected_urban * urban_burnrate / 100)  # Used sessoin state var
 waste_burnt_rural = waste_uncollected_rural * waste_burn_rate_rural / 100
 total_waste_burnt_kerbside = waste_burnt_urban + waste_burnt_rural  # burnt at kerbside
 
