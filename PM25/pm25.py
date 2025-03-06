@@ -104,30 +104,30 @@ with tab1:
 
 
 with tab2:
-    pmef_fcbtk  = 0.18
-    pmef_clamp = 1
+    pmef_fcbtk  = 0.18 #g/kg bricks
+    pmef_clamp = 1 #g/kg bricks
     pmef_zzk = 0.6*pmef_fcbtk
     brick_weight = 3.5 #kgs
 
-
-    total_bricks = st.number_input(
-                        label="Total number of bricks produced (in Billions)",
-                        label_visibility="visible",
-                        value=233,
-                        step=1)
         
     col1, col2, col3 = st.columns(3)
     # Sliders to input the percentage for each technology (displayed in columns)
     with col1:
+        total_bricks = st.number_input(
+                        label="Total number of bricks produced (in Billions)",
+                        label_visibility="visible",
+                        value=233,
+                        step=1)
         fcbtk_percentage = st.slider(" Bricks produced by FCBTKs (%)", 0, 100, 74)
 
     with col2:
+        st.subheader("Intervention 1: Unclamping bricks sector")
         clamps_percentage = st.slider("Bricks produced by Clamps (%)", 0, 100, 21)
 
     with col3:
+        st.subheader("Intervention 2: Transition FCBTKs to Zigzag kilns")
         zzk_percentage = st.slider("Bricks produced by ZZKs (%)", 0, 100, 5)
 
-        
 
     # Ensure the total percentages add up to 100
     if fcbtk_percentage + clamps_percentage + zzk_percentage != 100:
@@ -148,24 +148,39 @@ with tab2:
             pm25_clamp = round(clamps_bricks*brick_weight*pmef_clamp) #Kilo Tonnes
             st.write("PM2.5 emissions from Clamps: {} Kilo Tonnes".format(pm25_clamp))
 
+            st.subheader("Intervention 3: Co-fire coal in FCBTKs with biomass pellets")
+            replace_coal = st.slider("Replace coal in FCBTKs with biomass pellets (%)", 0, 100, 0)/100
+            coal = fcbtk_bricks/6.6571428571428575 #MT
+            coal_reduced = coal*(1-replace_coal)
+            coal_pmef = 3.03 #g/kg coal 
+
+            biomass = fcbtk_bricks/9.32 #MT
+            biomass_increased = biomass*(1+replace_coal)
+            biomass_pmef = coal_pmef*0.54 #g/kg biomass 
+            pm25_after_cofire = (coal_pmef*coal_reduced) + (biomass_pmef*biomass_increased)#kilotons
+            st.write(coal_reduced)
+            st.write(biomass_increased)
+            st.write("PM2.5 emissions from FCBTKs after cofiring: {} Kilo Tonnes".format(round(pm25_after_cofire)))
+
         with col3:
             st.write(f"ZZKs Bricks: {zzk_bricks:.0f} Billion bricks")
             pm25_zzk = round(zzk_bricks*brick_weight*pmef_zzk) #Kilo Tonnes
             st.write("PM2.5 emissions from ZZKs: {} Kilo Tonnes".format(pm25_zzk))
 
-        total_pm25 = round(pm25_fcbtk + pm25_clamp + pm25_zzk)
-        if total_pm25 < 284:
-            delta_text = "{} % less than business as usual".format(round(total_pm25/2.84 - 100)),
-        else:
-            delta_text = "{} % more than business as usual".format(round(total_pm25/2.84 - 100)),
-        st.metric(
-                label="Total PM2.5 Emissions",
-                label_visibility="visible",
-                value="{} kilo Tonnes".format(total_pm25),
-                delta=delta_text[0],
-                delta_color="inverse",
-                help="Business as usual= 74+21+5 = 284 kT"
-            )
+            total_pm25 = round(pm25_after_cofire + pm25_clamp + pm25_zzk)
+            if total_pm25 < 284:
+                delta_text = "{} % less than business as usual".format(round(total_pm25/2.84 - 100)),
+            else:
+                delta_text = "{} % more than business as usual".format(round(total_pm25/2.84 - 100)),
+            st.subheader("Total PM2.5 Emissions")
+            st.metric(
+                    label="Total PM2.5 Emissions",
+                    label_visibility="collapsed",
+                    value="{} kilo Tonnes".format(total_pm25),
+                    delta=delta_text[0],
+                    delta_color="inverse",
+                    help="Business as usual= 74+21+5 = 284 kT"
+                )
 
 
     data = {
